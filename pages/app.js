@@ -2,23 +2,37 @@ import React, { useEffect } from 'react'
 import router from 'next/router'
 
 import auth0 from '../lib/auth0'
+import { db } from '../lib/db' 
+import FunctionHelp from '../lib/functions-help'
 
 const App = props => {
 
     useEffect(() => {
         if(!props.isAuth) {
             router.push('/')
+        } else if(props.forceCreate) {
+            router.push('/create-status')
         }
     })
 
-    if(!props.isAuth) {
+    if(!props.isAuth || props.forceCreate) {
         return null
     }
 
     return (
         <section>
             <h1>APP</h1>
-            <pre>{ JSON.stringify(props, null, 2) }</pre>
+            <table>
+                { props.checkins.map(checkin => {
+                    return (
+                        <tr>
+                            <td>{ checkin.id }</td>
+                            <td>{ checkin.status }</td>
+                            <td>{ JSON.stringify(checkin.coords) }</td>
+                        </tr>
+                    )
+                })}
+            </table>
         </section>
     )
 }
@@ -27,20 +41,67 @@ export default App
 
 export async function getServerSideProps({ req, res }) {
 
-    let user = {}
-    let isAuth = false
-
     const session = await auth0.getSession(req)
 
     if(session) {
-        isAuth = true
-        user = session.user
+
+        const currentDate = FunctionHelp.currentDateToday()
+        
+        const todaysCheckin = await db
+            .collection('markers')
+            .doc(currentDate)
+            .collection('checks')
+            .doc(session.user.sub)
+            .get()
+
+        const todaysDate = todaysCheckin.data()
+        let forceCreate = true
+        if(todaysDate) {
+            forceCreate = false
+            const checkins = await db.collection('markers')
+                .doc(currentDate)
+                .collection('checks')
+                .near({
+                    center: todaysDate.coordinates,
+                    radius: 1000 
+                })
+                .get()
+
+            const checkinsList = []
+            checkins.docs.forEach(doc => {
+                checkinsList.push({
+                    id: doc.id,
+                    status: doc.data().status,
+                    coords: {
+                        lat: doc.data().coordinates.latitude,
+                        long: doc.data().coordinates.longittude
+                    }
+                })
+            })
+
+            return {
+                props: {
+                    isAuth: true,
+                    user: session.user,
+                    forceCreate: false,
+                    checkins: checkinsList
+                }
+            }
+        }
+
+        return {
+            props: {
+                isAuth: true,
+                user: session.user,
+                forceCreate
+            }
+        }
     }
 
     return {
         props: {
-            isAuth,
-            user
+            isAuth: false,
+            user: {}
         }
     }
 }
