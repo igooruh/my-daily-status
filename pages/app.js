@@ -21,12 +21,12 @@ const App = props => {
 
     return (
         <section>
-            <h1>APP</h1>
+            <h1>Status próximos a você:</h1>
             <table>
                 { props.checkins.map(checkin => {
                     return (
                         <tr>
-                            <td>{ checkin.id }</td>
+                            <td>{ checkin.id === props.user.sub && 'Seu status ' }</td>
                             <td>{ checkin.status }</td>
                             <td>{ JSON.stringify(checkin.coords) }</td>
                         </tr>
@@ -75,7 +75,13 @@ export async function getServerSideProps({ req, res }) {
                     coords: {
                         lat: doc.data().coordinates.latitude,
                         long: doc.data().coordinates.longittude
-                    }
+                    },
+                    distance: FunctionHelp.distanceCoordinates(
+                        todaysDate.coordinates.latitude,
+                        todaysDate.coordinates.longitude,
+                        doc.data().coordinates.latitude,
+                        doc.data().coordinates.longittude
+                    ).toFixed(2)
                 })
             })
 
