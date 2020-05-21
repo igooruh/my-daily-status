@@ -2,9 +2,9 @@ import admin from 'firebase-admin'
 
 import { db } from '../../lib/db'
 import auth0 from '../../lib/auth0'
-import { setStatus } from '../../lib/markers'
+import { setStatus } from '../../model/markers'
 
-const saveStatus = async(request, response) => {
+export const saveStatus = async(request, response) => {
 
     const session = await auth0.getSession(request)
 
@@ -15,5 +15,3 @@ const saveStatus = async(request, response) => {
 
     response.send({ ok: true })
 }
-
-export default saveStatus

@@ -1,4 +1,4 @@
-import { db } from './db'
+import { db } from '../lib/db'
 import { currentDateToday, distanceCoordinates } from '../lib/functions-help'
 import admin from  'firebase-admin'
 
