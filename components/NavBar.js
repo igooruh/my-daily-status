@@ -10,12 +10,16 @@ const NavLink = ({ href, children}) => {
 }
 
 const NavBar = () => {
+
+    const auth = useAuth()
+
     return (
         <div>
             <nav className='bg-gray-500 text-gray-700 text-center'>
                 <NavLink href='/sobre'>Sobre</NavLink>
-                <NavLink href='/cadastrar'>Cadastre-se</NavLink>
-                <NavLink href='/entrar'>Entrar</NavLink>
+                { !auth.isAuth && <NavLink href='/cadastrar'>Cadastre-se</NavLink> }
+                { !auth.isAuth && <NavLink href='/entrar'>Entrar</NavLink> }
+                { auth.isAuth && <NavLink href='/api/logout'>Sair</NavLink> }
             </nav>
         </div>
     )

@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import axios from 'axios'
 
 import auth0 from '../lib/auth0'
+import { useAuth } from '../lib/AuthContext'
 
 const CreateStatus = () => {
 
+    const auth = useAuth()
     const [dados, setDados] = useState({
         status: 'bem',
         lat: null,
